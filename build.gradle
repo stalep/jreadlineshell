@@ -1,0 +1,40 @@
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.6
+group = 'org.jboss.jreadlineshell'
+version = '0.1'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'JReadlineShell', 'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    compile group: 'org.jboss.jreadline', name: 'jreadline', version: '0.8-SNAPSHOT'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+}
+
+ideaProject {
+    javaVersion = "1.6"
+    withXml { provider ->
+        def node = provider.asNode()
+        def vcsConfig = node.component.find { it.'@name' == 'VcsDirectoryMappings' }
+        vcsConfig.mapping[0].'@vcs' = 'Git'
+    }
+    beforeConfigured { module ->
+        module.modulePaths.removeAll { it.filePath.endsWith('jreadlineshell.iml') }
+    }
+}
+
+ideaModule {
+    moduleName = 'jreadlineshell'
+}
+
