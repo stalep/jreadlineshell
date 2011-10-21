@@ -17,6 +17,7 @@
 package org.jboss.jreadlineshell.file;
 
 import org.jboss.jreadline.complete.Completion;
+import org.jboss.jreadline.util.Parser;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.List;
  */
 public class Ls implements Completion, Command {
 
-    private static final String command = new String("ls");
+    private static final String command = "ls";
     private Prompt prompt;
 
     public Ls(Prompt prompt) {
@@ -35,16 +36,16 @@ public class Ls implements Completion, Command {
     }
 
     @Override
-    public List<String> complete(String s, int i) {
+    public List<String> complete(String s, int cursor) {
         List<String> completeList = new ArrayList<String>();
         if(s.trim().length() < 1 || s.equals(command) || s.equals("l")) {
             completeList.add(command);
         }
         else if(s.startsWith("ls ")) {
-           String rest = s.substring(command.length()).trim();
-            //System.out.println(" need to complete file/pathnames. rest:"+rest+":");
-            if(rest.length() > 0)
-                completeList.addAll(listMatchingDirectories(rest));
+            //String rest = s.substring("ls ".length());
+
+            String word = Parser.findWordClosestToCursor(s, cursor);
+            completeList.addAll(listMatchingDirectories(word));
         }
         return completeList;
     }
@@ -59,10 +60,7 @@ public class Ls implements Completion, Command {
 
     @Override
     public boolean matchCommand(String cmd) {
-        if(cmd.startsWith(command))
-            return true;
-        else
-            return false;
+        return cmd.startsWith(command);
     }
 
     @Override
@@ -76,6 +74,15 @@ public class Ls implements Completion, Command {
             String rest = cmd.substring(command.length()).trim();
             if(rest.contains(" ")) {
                 System.out.println("list multiple files");
+                //TODO: need to sort files and folders and list them accordingly
+                /*
+                for(String s : rest.split(" ")) {
+                    File f = new File(s);
+                    if(f.isDirectory()) {
+                        builder.append(Parser.formatCompletions(f.list(), 80, 80));
+                    }
+                }
+                */
             }
             else {
                 if(rest.startsWith("/"))
@@ -101,7 +108,9 @@ public class Ls implements Completion, Command {
     private List<String> listMatchingDirectories(String possibleDir) {
         //System.out.println("looking for: " + possibleDir);
         List<String> returnFiles;
-        if (new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isDirectory()) {
+        if (possibleDir.trim().length() > 0 &&
+               !possibleDir.startsWith("/") &&
+                new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isDirectory()) {
             //System.out.println("possibleDir is a dir, return those");
             if(!possibleDir.endsWith("/")) {
                returnFiles = new ArrayList<String>();
@@ -111,15 +120,33 @@ public class Ls implements Completion, Command {
             else
                 return listDirectory(new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir));
         }
+        else  if (new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isFile()) {
+            returnFiles = new ArrayList<String>();
+            returnFiles.add(" ");
+            return returnFiles;
+        }
         //should check if possibleDir contain /
         else if(possibleDir.contains("/")) {
+            returnFiles = new ArrayList<String>();
+            if(new File(possibleDir).isDirectory() && !possibleDir.endsWith("/")) {
+                returnFiles.add("/");
+                return returnFiles;
+            }
+
             //1.list possibleDir.substring(pos
             String lastDir = possibleDir.substring(0,possibleDir.lastIndexOf("/"));
             String rest = possibleDir.substring(possibleDir.lastIndexOf("/")+1);
             //System.out.println("rest:"+rest);
             //System.out.println("lastDir:"+lastDir);
-            List<String> allFiles = listDirectory(new File(prompt.getCwd()+"/"+lastDir));
-            returnFiles = new ArrayList<String>();
+
+            List<String> allFiles;
+            if(possibleDir.startsWith("/"))
+                allFiles =  listDirectory(new File("/"+lastDir));
+            else
+                allFiles =  listDirectory(new File(prompt.getCwd()+"/"+lastDir));
+
+            //TODO:
+            //1. remove those that do not start with rest, if its more than one
             for (String file : allFiles)
                 if (file.startsWith(rest))
                     returnFiles.add(file.substring(rest.length()));
