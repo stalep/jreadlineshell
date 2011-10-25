@@ -28,11 +28,15 @@ import java.util.List;
  */
 public class Ls implements Completion, Command {
 
+    private int height;
+    private int width;
     private static final String command = "ls";
     private Prompt prompt;
 
-    public Ls(Prompt prompt) {
+    public Ls(Prompt prompt, int height, int width) {
         this.prompt = prompt;
+        this.height = height;
+        this.width = width;
     }
 
     @Override
@@ -96,11 +100,14 @@ public class Ls implements Completion, Command {
         }
 
         if(dir != null && dir.isDirectory()) {
+            builder.append(Parser.formatCompletions(listDirectory(dir), height, width));
+            /*
             for(String fileName : listDirectory(dir))
                 builder.append(fileName).append("  ");
+            */
             }
         else
-            builder.append(dir);
+            builder.append(dir).append("\n");
 
         return builder.toString();
     }
@@ -149,7 +156,23 @@ public class Ls implements Completion, Command {
             //1. remove those that do not start with rest, if its more than one
             for (String file : allFiles)
                 if (file.startsWith(rest))
+                    //returnFiles.add(file);
                     returnFiles.add(file.substring(rest.length()));
+
+            if(returnFiles.size() > 1) {
+                String startsWith = Parser.findStartsWith(returnFiles);
+                if(startsWith != null && startsWith.length() > 0) {
+                    returnFiles.clear();
+                    returnFiles.add(startsWith);
+                }
+                //need to list complete filenames
+                else {
+                    returnFiles.clear();
+                    for (String file : allFiles)
+                        if (file.startsWith(rest))
+                            returnFiles.add(file);
+                }
+            }
 
             return returnFiles;
 
