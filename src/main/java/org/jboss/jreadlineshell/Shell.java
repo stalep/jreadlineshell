@@ -19,6 +19,7 @@ package org.jboss.jreadlineshell;
 
 import org.jboss.jreadline.complete.Completion;
 import org.jboss.jreadline.console.Console;
+import org.jboss.jreadlineshell.file.Cd;
 import org.jboss.jreadlineshell.file.Command;
 import org.jboss.jreadlineshell.file.Ls;
 import org.jboss.jreadlineshell.file.Prompt;
@@ -40,12 +41,16 @@ public class Shell {
                         System.getProperty("user.dir"));
 
         Console console = new Console();
-        Ls ls = new Ls(prompt);
+        Ls ls = new Ls(prompt, console.getTerminalHeight(), console.getTerminalWidth());
+        Cd cd = new Cd(prompt);
         List<Command> commands = new ArrayList<Command>();
         commands.add(ls);
+        commands.add(cd);
 
         List<Completion> completions = new ArrayList<Completion>();
         completions.add(ls);
+        completions.add(cd);
+
 
         String line;
 
@@ -64,8 +69,8 @@ public class Shell {
                 break;
             }
 
-            if(!matched) {
-                console.pushToConsole(line+". Command not found.");
+            if(!matched && line.length() > 0) {
+                console.pushToConsole(line+". Command not found.\n");
             }
         }
     }
