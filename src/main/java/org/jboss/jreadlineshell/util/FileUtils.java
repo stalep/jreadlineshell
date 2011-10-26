@@ -13,13 +13,10 @@ import java.util.List;
 public class FileUtils {
 
     public static List<String> listMatchingDirectories(String possibleDir, Prompt prompt) {
-                //System.out.println("looking for: " + possibleDir);
-        //TODO: do not work if there is a filename/other directory
         // that starts with possibleDir
-        List<String> returnFiles;
+        List<String> returnFiles = new ArrayList<String>();
         if (possibleDir.trim().isEmpty()) {
             List<String> allFiles = listDirectory(prompt.getCwd());
-            returnFiles = new ArrayList<String>();
             for (String file : allFiles)
                 if (file.startsWith(possibleDir))
                     returnFiles.add(file.substring(possibleDir.length()));
@@ -28,26 +25,30 @@ public class FileUtils {
         }
         else if (!possibleDir.startsWith("/") &&
                 new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isDirectory()) {
-            //System.out.println("possibleDir is a dir, return those");
             if(!possibleDir.endsWith("/")) {
-               returnFiles = new ArrayList<String>();
                 returnFiles.add("/");
                 return returnFiles;
             }
             else
                 return listDirectory(new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir));
         }
-        else  if (new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isFile()) {
-            returnFiles = new ArrayList<String>();
+        else  if(new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isFile()) {
             returnFiles.add(" ");
             return returnFiles;
         }
-        //should check if possibleDir contain /
-        else { //if(possibleDir.contains("/")) {
+        else if(possibleDir.startsWith(("/")) && new File(possibleDir).isFile()) {
+            returnFiles.add(" ");
+            return returnFiles;
+        }
+        else {
             returnFiles = new ArrayList<String>();
             if(new File(possibleDir).isDirectory() && !possibleDir.endsWith("/")) {
                 returnFiles.add("/");
                 return returnFiles;
+            }
+            else if(new File(possibleDir).isDirectory() &&
+                    possibleDir.endsWith("/")) {
+                return listDirectory(new File(possibleDir));
             }
 
             //1.list possibleDir.substring(pos
@@ -101,9 +102,6 @@ public class FileUtils {
             return returnFiles;
 
         }
-
-
-
     }
 
     public static List<String> listDirectory(File path) {
