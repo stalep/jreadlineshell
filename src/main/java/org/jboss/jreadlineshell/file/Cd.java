@@ -17,6 +17,8 @@
 package org.jboss.jreadlineshell.file;
 
 import org.jboss.jreadline.complete.Completion;
+import org.jboss.jreadline.util.Parser;
+import org.jboss.jreadlineshell.util.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -68,10 +70,16 @@ public class Cd implements Command, Completion{
     }
 
     @Override
-    public List<String> complete(String s, int i) {
+    public List<String> complete(String s, int cursor) {
         List<String> completeList = new ArrayList<String>();
-        if(s.trim().isEmpty() || s.startsWith("cd ") || s.equals("cd") || s.equals("c"))
-            completeList.add("cd");
+        if(s.trim().isEmpty() ||  s.equals(command) || s.equals("c"))
+            completeList.add(command);
+        else if(s.startsWith("cd ")) {
+
+            String word = Parser.findWordClosestToCursor(s, cursor);
+            completeList.addAll(FileUtils.listMatchingDirectories(word, prompt));
+
+        }
 
         return completeList;
     }

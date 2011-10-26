@@ -18,6 +18,7 @@ package org.jboss.jreadlineshell.file;
 
 import org.jboss.jreadline.complete.Completion;
 import org.jboss.jreadline.util.Parser;
+import org.jboss.jreadlineshell.util.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,17 +50,9 @@ public class Ls implements Completion, Command {
             //String rest = s.substring("ls ".length());
 
             String word = Parser.findWordClosestToCursor(s, cursor);
-            completeList.addAll(listMatchingDirectories(word));
+            completeList.addAll(FileUtils.listMatchingDirectories(word, prompt));
         }
         return completeList;
-    }
-
-    private List<String> listDirectory(File path) {
-        List<String> fileNames = new ArrayList<String>();
-        for(File file : path.listFiles())
-            fileNames.add(file.getName());
-
-        return fileNames;
     }
 
     @Override
@@ -100,7 +93,7 @@ public class Ls implements Completion, Command {
         }
 
         if(dir != null && dir.isDirectory()) {
-            builder.append(Parser.formatCompletions(listDirectory(dir), height, width));
+            builder.append(Parser.formatCompletions(FileUtils.listDirectory(dir), height, width));
             /*
             for(String fileName : listDirectory(dir))
                 builder.append(fileName).append("  ");
@@ -110,82 +103,5 @@ public class Ls implements Completion, Command {
             builder.append(dir).append("\n");
 
         return builder.toString();
-    }
-
-    private List<String> listMatchingDirectories(String possibleDir) {
-        //System.out.println("looking for: " + possibleDir);
-        List<String> returnFiles;
-        if (possibleDir.trim().length() > 0 &&
-               !possibleDir.startsWith("/") &&
-                new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isDirectory()) {
-            //System.out.println("possibleDir is a dir, return those");
-            if(!possibleDir.endsWith("/")) {
-               returnFiles = new ArrayList<String>();
-                returnFiles.add("/");
-                return returnFiles;
-            }
-            else
-                return listDirectory(new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir));
-        }
-        else  if (new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isFile()) {
-            returnFiles = new ArrayList<String>();
-            returnFiles.add(" ");
-            return returnFiles;
-        }
-        //should check if possibleDir contain /
-        else if(possibleDir.contains("/")) {
-            returnFiles = new ArrayList<String>();
-            if(new File(possibleDir).isDirectory() && !possibleDir.endsWith("/")) {
-                returnFiles.add("/");
-                return returnFiles;
-            }
-
-            //1.list possibleDir.substring(pos
-            String lastDir = possibleDir.substring(0,possibleDir.lastIndexOf("/"));
-            String rest = possibleDir.substring(possibleDir.lastIndexOf("/")+1);
-            //System.out.println("rest:"+rest);
-            //System.out.println("lastDir:"+lastDir);
-
-            List<String> allFiles;
-            if(possibleDir.startsWith("/"))
-                allFiles =  listDirectory(new File("/"+lastDir));
-            else
-                allFiles =  listDirectory(new File(prompt.getCwd()+"/"+lastDir));
-
-            //TODO:
-            //1. remove those that do not start with rest, if its more than one
-            for (String file : allFiles)
-                if (file.startsWith(rest))
-                    //returnFiles.add(file);
-                    returnFiles.add(file.substring(rest.length()));
-
-            if(returnFiles.size() > 1) {
-                String startsWith = Parser.findStartsWith(returnFiles);
-                if(startsWith != null && startsWith.length() > 0) {
-                    returnFiles.clear();
-                    returnFiles.add(startsWith);
-                }
-                //need to list complete filenames
-                else {
-                    returnFiles.clear();
-                    for (String file : allFiles)
-                        if (file.startsWith(rest))
-                            returnFiles.add(file);
-                }
-            }
-
-            return returnFiles;
-
-        }
-        else {
-            List<String> allFiles = listDirectory(prompt.getCwd());
-            returnFiles = new ArrayList<String>();
-            for (String file : allFiles)
-                if (file.startsWith(possibleDir))
-                    returnFiles.add(file.substring(possibleDir.length()));
-
-            return returnFiles;
-        }
-
     }
 }

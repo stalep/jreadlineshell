@@ -17,6 +17,7 @@
 package org.jboss.jreadlineshell.file;
 
 import org.jboss.jreadline.terminal.ANSIColors;
+import org.jboss.jreadlineshell.util.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -56,13 +57,8 @@ public class Prompt {
 
     public String getPrompt() {
         List<String> output = new ArrayList<String>();
-        if(home.getAbsolutePath().equals(cwd.getAbsolutePath()))
             return new StringBuilder().append(promptFirstPart)
-                    .append(promptSecondPart)
-                    .toString();
-        else
-            return new StringBuilder().append(promptFirstPart)
-                    .append(cwd.getAbsolutePath())
+                    .append(FileUtils.getDirectoryName(cwd, home))
                     .append(promptSecondPart)
                     .toString();
     }
