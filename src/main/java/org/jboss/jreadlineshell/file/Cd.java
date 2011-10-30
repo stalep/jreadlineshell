@@ -16,6 +16,7 @@
  */
 package org.jboss.jreadlineshell.file;
 
+import org.jboss.jreadline.command.Command;
 import org.jboss.jreadline.complete.Completion;
 import org.jboss.jreadline.util.Parser;
 import org.jboss.jreadlineshell.util.FileUtils;
@@ -42,7 +43,7 @@ public class Cd implements Command, Completion{
     }
 
     @Override
-    public String runCommand(String cmd) {
+    public String executeCommand(String cmd) {
         if(cmd.trim().equals(command)) {
             prompt.setCwd(prompt.getHome());
             return null;

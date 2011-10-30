@@ -17,10 +17,10 @@
 package org.jboss.jreadlineshell;
 
 
+import org.jboss.jreadline.command.Command;
 import org.jboss.jreadline.complete.Completion;
 import org.jboss.jreadline.console.Console;
 import org.jboss.jreadlineshell.file.Cd;
-import org.jboss.jreadlineshell.file.Command;
 import org.jboss.jreadlineshell.file.Ls;
 import org.jboss.jreadlineshell.file.Prompt;
 
@@ -36,7 +36,6 @@ public class Shell {
 
         Prompt prompt =
                 new Prompt(System.getProperty("user.name"),
-                        "beistet",
                         System.getProperty("user.home"),
                         System.getProperty("user.dir"));
 
@@ -61,7 +60,7 @@ public class Shell {
             boolean matched = false;
             for(Command cmd : commands)
                     if(cmd.matchCommand(line)) {
-                        console.pushToConsole(cmd.runCommand(line.trim()));
+                        console.pushToConsole(cmd.executeCommand(line.trim()));
                         matched = true;
                     }
 

@@ -6,11 +6,18 @@ import org.jboss.jreadlineshell.file.Prompt;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="mailto:stale.pedersen@jboss.org">Ståle W. Pedersen</a>
  */
 public class FileUtils {
+
+    public static final Pattern startsWithBack = Pattern.compile("^\\.\\..*");
+    public static final Pattern containBack = Pattern.compile("[\\.\\.[/]?]+");
+    public static final Pattern space = Pattern.compile(".+\\s+.+");
+    public static final Pattern startsWithSlash = Pattern.compile("^\\/.*");
+    public static final Pattern endsWithSlash = Pattern.compile(".*\\/$");
 
     public static List<String> listMatchingDirectories(String possibleDir, Prompt prompt) {
         // that starts with possibleDir
@@ -23,9 +30,11 @@ public class FileUtils {
 
             return returnFiles;
         }
-        else if (!possibleDir.startsWith("/") &&
+        //else if (!possibleDir.startsWith("/") &&
+        else if (!startsWithSlash.matcher(possibleDir).matches() &&
                 new File(prompt.getCwd().getAbsolutePath() + "/" + possibleDir).isDirectory()) {
-            if(!possibleDir.endsWith("/")) {
+            //if(!possibleDir.endsWith("/")) {
+            if(!endsWithSlash.matcher(possibleDir).matches()){
                 returnFiles.add("/");
                 return returnFiles;
             }
@@ -115,7 +124,7 @@ public class FileUtils {
 
     public static String getDirectoryName(File path, File home) {
         if(path.getAbsolutePath().startsWith(home.getAbsolutePath()))
-            return path.getAbsolutePath().substring(home.getAbsolutePath().length());
+            return "~"+path.getAbsolutePath().substring(home.getAbsolutePath().length());
         else
             return path.getAbsolutePath();
     }

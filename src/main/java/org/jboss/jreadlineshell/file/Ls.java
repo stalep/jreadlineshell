@@ -16,6 +16,7 @@
  */
 package org.jboss.jreadlineshell.file;
 
+import org.jboss.jreadline.command.Command;
 import org.jboss.jreadline.complete.Completion;
 import org.jboss.jreadline.util.Parser;
 import org.jboss.jreadlineshell.util.FileUtils;
@@ -23,6 +24,7 @@ import org.jboss.jreadlineshell.util.FileUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author Ståle W. Pedersen <stale.pedersen@jboss.org>
@@ -33,6 +35,9 @@ public class Ls implements Completion, Command {
     private int width;
     private static final String command = "ls";
     private Prompt prompt;
+    private Pattern startsWithBack = Pattern.compile("^\\.\\..*");
+    private Pattern containBack = Pattern.compile("[\\.\\.[/]?]+");
+    private Pattern space = Pattern.compile(".+\\s+.+");
 
     public Ls(Prompt prompt, int height, int width) {
         this.prompt = prompt;
@@ -61,7 +66,7 @@ public class Ls implements Completion, Command {
     }
 
     @Override
-    public String runCommand(String cmd) {
+    public String executeCommand(String cmd) {
         //System.out.println("running command:"+cmd+":");
         StringBuilder builder = new StringBuilder();
         File dir = null;
@@ -69,6 +74,21 @@ public class Ls implements Completion, Command {
             dir = prompt.getCwd();
         else {
             String rest = cmd.substring(command.length()).trim();
+            //if rest doesnt contain ' '
+            if(!FileUtils.space.matcher(rest).matches()) {
+                if(FileUtils.containBack.matcher(rest).matches()) {
+
+                }
+            }
+            //contains several items
+            else {
+
+            }
+
+
+
+
+
             if(rest.contains(" ")) {
                 System.out.println("list multiple files");
                 //TODO: need to sort files and folders and list them accordingly

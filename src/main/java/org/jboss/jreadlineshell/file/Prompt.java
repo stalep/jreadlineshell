@@ -20,6 +20,8 @@ import org.jboss.jreadline.terminal.ANSIColors;
 import org.jboss.jreadlineshell.util.FileUtils;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,18 +38,31 @@ public class Prompt {
     private StringBuilder prompt;
     private StringBuilder promptSecondPart;
 
+    public Prompt(String userName, String home, String cwd) {
+        this(userName, null, home, cwd);
+    }
+
     public Prompt(String userName, String machineName, String home, String cwd) {
         this.userName = userName;
-        this.machineName = machineName;
         this.home = new File(home);
         this.cwd = new File(cwd);
         if(!this.home.isDirectory() || !this.cwd.isDirectory())
             throw new RuntimeException(("home and cwd must be a directory"));
 
+        if(machineName == null || machineName.trim().length() < 1) {
+            try {
+                this.machineName = InetAddress.getLocalHost().getHostName();
+            }
+            catch (UnknownHostException e) {
+            }
+        }
+        if(this.machineName == null)
+            this.machineName = "localhost";
+
         promptFirstPart = new StringBuilder();
         promptFirstPart.append(ANSIColors.BLUE_TEXT()).append("[")
               .append(ANSIColors.RED_TEXT()).append(userName).append("@")
-              .append(machineName).append(":~");
+              .append(this.machineName).append(":");
         promptSecondPart = new StringBuilder();
         promptSecondPart.append(ANSIColors.BLUE_TEXT()).append("]")
                 .append(ANSIColors.WHITE_TEXT()).append("$ ");
