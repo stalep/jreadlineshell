@@ -76,18 +76,14 @@ public class Ls implements Completion, Command {
             String rest = cmd.substring(command.length()).trim();
             //if rest doesnt contain ' '
             if(!FileUtils.space.matcher(rest).matches()) {
-                if(FileUtils.containBack.matcher(rest).matches()) {
+                if(FileUtils.containParent.matcher(rest).matches()) {
 
                 }
             }
-            //contains several items
+
             else {
 
             }
-
-
-
-
 
             if(rest.contains(" ")) {
                 System.out.println("list multiple files");
@@ -102,7 +98,8 @@ public class Ls implements Completion, Command {
                 */
             }
             else {
-                if(rest.startsWith("/"))
+                if(FileUtils.startsWithSlash.matcher(rest).matches())
+                    //if(rest.startsWith("/"))
                     dir = new File(rest);
                 else if(rest.startsWith("~")) {
                     dir = prompt.getHome();
